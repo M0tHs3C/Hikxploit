@@ -18,6 +18,12 @@ pip install censys
 * 4 . mass exploit all vuln CCTV
 * 5 . select a CCTV'S ip to exploit
 * 6 . random exploit CCTV from the vuln list
+# Suggested query's
+for shodan and censys the best query's for now is
+```bash
+App-webs 200 OK
+```
+
 
 
 legal disclaimer: Usage of hikxploit for attacking targets without prior mutual consent is illegal. It is the end user's responsibility to obey all applicable local, state and federal laws. Developers assume no liability and are not responsible for any misuse or damage caused by this program
