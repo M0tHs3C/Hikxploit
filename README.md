@@ -15,7 +15,7 @@ pip install censys
 ```
 # Usage
 * 1 . Gather host with shodan (api needed)
-* 2 . Gather host with censys.io (api needed)`WIP`
+* 2 . Gather host with censys.io (api needed)
 * 3 . scan for vuln host
 * 4 . mass exploit all vuln CCTV
 * 5 . select a CCTV'S ip to exploit
