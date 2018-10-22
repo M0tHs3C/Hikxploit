@@ -1,7 +1,8 @@
 # Hikxploit
 hixploit is a python tool that will give you the opportunity to gather all hikvision cctv that are vulnerable to a specific exploit and then change its password
 # Disclaimer
-currently the tool can run only on linux, im working on improve it
+The tool can work even on windows with the specific version of the too
+# Photo
 ![Alt text](https://github.com/M0tHs3C/Hikxploit/blob/master/foto.png?raw=true "Title")
 # Install
 get
