@@ -25,6 +25,7 @@ pip install censys
 for shodan and censys the best query's for now is
 ```bash
 App-webs 200 OK
+App-webs 200 OK location.country_code: IT (works great by selecting where you wish to test)
 ```
 
 
