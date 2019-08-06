@@ -319,7 +319,7 @@ def response():
         vuln_scan_exp()
         response()
     elif str(usage_str) == "5":
-        print('[!!!]Very dangerous option please be carefull')
+        print('[!!!]Very dangerous option please be careful')
         answer = raw_input('[???]do you wanna continue? [y/n]')
         if str(answer) == "y":
             mass_exploit()
