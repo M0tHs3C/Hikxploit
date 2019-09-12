@@ -31,23 +31,23 @@ App-webs 200 OK
 App-webs 200 OK location.country_code: IT (works great by selecting where you wish to test)
 ```
 # Tutorial
-Hikxploit is a very simple tool, it may have some bugs but i'm working on to fix most of them
----1---
+Hikxploit is a very simple tool, it may have some bugs but i'm working on to fix most of them<br/>
+---1---<br/>
 First you have to gather some host with censys or shodan 
 in order to use this search engine you will need a key or two
 the tool will probably ask you a key if it can't read from the file due to some permission failure
-you can just copy paste the key on the tool or you can open up the api file in the tool folder and copy paste it on the first line of the tool
+you can just copy paste the key on the tool or you can open up the api file in the tool folder and copy paste it on the first line of the tool<br/>
 If you use shodan you will need only one line
-If you use censys you will need two so you have to save it one line at a time.
---2--
+If you use censys you will need two so you have to save it one line at a time.<br/>
+--2--<br/>
 After gathering some hosts you will need se if the hosts you gathered are really up
-This function will test if the hosts can be pinged proving that is really up
---3--
+This function will test if the hosts can be pinged proving that is really up<br/>
+--3--<br/>
 After that we will need to test if all the host that we gathered are really vulnerable at the exploit
 Some of them will not be vulnerable but no worries
 remember, shodan like censys offer a basic free plan wich limit your search
-there are really a lot of cameras still vulnerable to this exploit and this is bad
---After this step we are ready to exploit--
+there are really a lot of cameras still vulnerable to this exploit and this is bad<br/>
+--After this step we are ready to exploit--<br/>
 the other options are really self-explanatory
 # Future update
 im working on another exploit in order to amplify my tool by adding other exploit for other cameras from other companies
