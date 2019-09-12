@@ -13,6 +13,7 @@ pip
 ```bash
 pip install shodan
 pip install censys
+pip install blessings
 ```
 # Usage
 * 1 . Gather host with shodan (api needed)
